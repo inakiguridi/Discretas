@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Práctica Prueba 1 — Matemáticas Discretas</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#ffffff; --text:#182033; --muted:#667085;
+    --line:#dce2eb; --accent:#315efb; --accent2:#eaf0ff;
+    --ok:#147d3f; --okbg:#eaf8ef; --bad:#b42318; --badbg:#fff0ee;
+    --warn:#8a5a00; --warnbg:#fff6df;
+    --shadow:0 8px 28px rgba(22,34,58,.08);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 64px}
+  header{
+    background:linear-gradient(135deg,#172554,#223b86 58%,#315efb);
+    color:white;border-radius:20px;padding:28px;box-shadow:var(--shadow);
+  }
+  h1{margin:0 0 8px;font-size:clamp(1.7rem,4vw,2.55rem);line-height:1.15}
+  header p{margin:6px 0;color:#e6ebff;max-width:850px}
+  .scope{
+    display:inline-block;margin-top:12px;padding:7px 11px;border-radius:999px;
+    background:rgba(255,255,255,.13);font-weight:700;font-size:.9rem
+  }
+  .controls{
+    margin-top:18px;background:var(--panel);border:1px solid var(--line);
+    border-radius:18px;padding:18px;box-shadow:var(--shadow);
+  }
+  .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  @media(max-width:820px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}}
+  label.small{display:block;font-size:.78rem;font-weight:800;color:var(--muted);margin-bottom:5px}
+  select,button,textarea{
+    font:inherit;
+  }
+  select{
+    width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--text)
+  }
+  .topicbox{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .topics{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{
+    display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;
+    padding:6px 10px;background:#fff;font-size:.88rem
+  }
+  .chip input{accent-color:var(--accent)}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  button{
+    border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer;
+    background:var(--accent);color:#fff;
+  }
+  button.secondary{background:#eef2f8;color:#24324d}
+  button.ghost{background:white;color:#24324d;border:1px solid var(--line)}
+  button:hover{filter:brightness(.98)}
+  .status{
+    display:flex;justify-content:space-between;gap:10px;align-items:center;
+    margin:20px 2px 10px;color:var(--muted);font-size:.92rem
+  }
+  .status strong{color:var(--text)}
+  #questions{display:grid;gap:14px}
+  .q{
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:18px;box-shadow:0 5px 18px rgba(28,39,64,.05)
+  }
+  .q.correct{border-color:#9bd5ad;background:linear-gradient(0deg,var(--okbg),white 42%)}
+  .q.incorrect{border-color:#f0aaa4;background:linear-gradient(0deg,var(--badbg),white 42%)}
+  .qhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+  .num{font-weight:900}
+  .tag{
+    flex:0 0 auto;background:var(--accent2);color:#2446bd;border-radius:999px;
+    padding:4px 8px;font-size:.74rem;font-weight:900
+  }
+  .prompt{font-size:1.02rem;margin:8px 0 12px}
+  .formula{
+    font-family:"STIX Two Text","Cambria Math","Times New Roman",serif;
+    font-size:1.08em;white-space:normal;
+  }
+  .options{display:grid;gap:8px}
+  .opt{
+    display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);
+    border-radius:10px;padding:9px 10px;cursor:pointer;background:#fff
+  }
+  .opt:hover{background:#fafbff}
+  .opt input{margin-top:4px;accent-color:var(--accent)}
+  textarea{
+    width:100%;min-height:115px;border:1px solid var(--line);border-radius:10px;padding:10px;resize:vertical
+  }
+  .feedback{display:none;margin-top:12px;border-radius:10px;padding:10px 11px;font-size:.92rem}
+  .feedback.show{display:block}
+  .feedback.ok{background:var(--okbg);color:#0f5f30}
+  .feedback.bad{background:var(--badbg);color:#8e1b13}
+  .solution{
+    display:none;margin-top:12px;padding:12px;border-left:4px solid var(--accent);
+    background:#f6f8ff;border-radius:8px
+  }
+  .solution.show{display:block}
+  .qactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .qactions button{padding:7px 10px;font-size:.86rem}
+  .qactions .showSol{background:#eef2ff;color:#2842a4}
+  .tablewrap{overflow-x:auto;margin:10px 0}
+  table{border-collapse:collapse;font-size:.92rem}
+  th,td{border:1px solid var(--line);padding:5px 9px;text-align:center}
+  th{background:#f2f5fa}
+  .note{color:var(--muted);font-size:.88rem}
+  .warn{background:var(--warnbg);color:var(--warn);padding:9px 11px;border-radius:9px}
+  footer{margin-top:24px;color:var(--muted);font-size:.84rem;text-align:center}
+  @media print{
+    body{background:white}.controls,.actions,#checkAll,#showAll,.qactions,.status{display:none!important}
+    .wrap{max-width:none;padding:0}.q{break-inside:avoid;box-shadow:none}
+    header{background:white;color:black;box-shadow:none;border:1px solid #bbb}
+    header p{color:#333}.scope{background:#eee}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Práctica Prueba 1 — Lógica proposicional</h1>
+  <p>Generador autocontenido de ejercicios para sintaxis, semántica, tablas de verdad, equivalencia, formas normales, completitud funcional, satisfacibilidad, modelamiento, tautologías/contradicciones y consecuencia lógica.</p>
+  <span class="scope">Cobertura: Clases/PPT 1–4 · Excluye PPT 5 (lógica de predicados)</span>
+</header>
+
+<section class="controls">
+  <div class="grid">
+    <div>
+      <label class="small" for="count">Cantidad de ejercicios</label>
+      <select id="count">
+        <option>10</option><option>15</option><option selected>20</option><option>25</option><option>30</option>
+      </select>
+    </div>
+    <div>
+      <label class="small" for="mode">Modo</label>
+      <select id="mode">
+        <option value="mixed" selected>Mixto</option>
+        <option value="auto">Solo autocorregibles</option>
+        <option value="proof">Solo demostraciones/desarrollo</option>
+      </select>
+    </div>
+    <div>
+      <label class="small" for="difficulty">Dificultad</label>
+      <select id="difficulty">
+        <option value="balanced" selected>Balanceada</option>
+        <option value="basic">Más directa</option>
+        <option value="hard">Más exigente</option>
+      </select>
+    </div>
+    <div>
+      <label class="small">Tanda actual</label>
+      <div id="seed" style="padding:10px 0;font-weight:800">—</div>
+    </div>
+  </div>
+
+  <div class="topicbox">
+    <label class="small">Temas incluidos</label>
+    <div class="topics" id="topics"></div>
+  </div>
+
+  <div class="actions">
+    <button id="generate">Generar nueva tanda</button>
+    <button id="checkAll" class="secondary">Corregir autocorregibles</button>
+    <button id="showAll" class="ghost">Mostrar/ocultar todas las pautas</button>
+  </div>
+</section>
+
+<div class="status">
+  <div id="summary">Configura y genera una tanda.</div>
+  <div id="score"><strong>Puntaje:</strong> —</div>
+</div>
+
+<main id="questions"></main>
+
+<footer>
+  Las demostraciones y ejercicios de desarrollo no se puntúan automáticamente: usa la pauta oculta para autocorrección.
+</footer>
+</div>
+
+<script>
+'use strict';
+
+// ---------- utilidades ----------
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const randInt = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const shuffle = a => {
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
+  return b;
+};
+const uniq = a => [...new Set(a)];
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const fspan = s => `<span class="formula">${esc(s)}</span>`;
+const varsPool = ['p','q','r','s'];
+const permVars = n => shuffle(varsPool).slice(0,n);
+
+// ---------- AST de fórmulas ----------
+const V = n => ({t:'v',n});
+const N = a => ({t:'n',a});
+const A = (a,b) => ({t:'a',a,b});
+const O = (a,b) => ({t:'o',a,b});
+const I = (a,b) => ({t:'i',a,b});
+const B = (a,b) => ({t:'b',a,b});
+
+function fmt(x){
+  switch(x.t){
+    case 'v': return x.n;
+    case 'n': return x.a.t==='v' ? `¬${fmt(x.a)}` : `¬${fmt(x.a)}`;
+    case 'a': return `(${fmt(x.a)} ∧ ${fmt(x.b)})`;
+    case 'o': return `(${fmt(x.a)} ∨ ${fmt(x.b)})`;
+    case 'i': return `(${fmt(x.a)} → ${fmt(x.b)})`;
+    case 'b': return `(${fmt(x.a)} ↔ ${fmt(x.b)})`;
+  }
+}
+function ev(x,val){
+  switch(x.t){
+    case 'v': return val[x.n] ? 1 : 0;
+    case 'n': return 1-ev(x.a,val);
+    case 'a': return ev(x.a,val) && ev(x.b,val) ? 1:0;
+    case 'o': return ev(x.a,val) || ev(x.b,val) ? 1:0;
+    case 'i': return ev(x.a,val)===1 && ev(x.b,val)===0 ? 0:1;
+    case 'b': return ev(x.a,val)===ev(x.b,val) ? 1:0;
+  }
+}
+function allVals(vs){
+  const out=[];
+  for(let mask=0;mask<(1<<vs.length);mask++){
+    const v={};
+    vs.forEach((x,i)=>v[x]=(mask>>(vs.length-1-i))&1);
+    out.push(v);
+  }
+  return out;
+}
+function valText(val,vs){ return vs.map(v=>`${v}=${val[v]}`).join(', '); }
+
+function randomFormula(vs,depth){
+  if(depth<=0 || Math.random()<0.25) return V(pick(vs));
+  const ops=['n','a','o','i','b'];
+  const op=pick(ops);
+  if(op==='n') return N(randomFormula(vs,depth-1));
+  const l=randomFormula(vs,depth-1), r=randomFormula(vs,depth-1);
+  return op==='a'?A(l,r):op==='o'?O(l,r):op==='i'?I(l,r):B(l,r);
+}
+function classification(f,vs){
+  const vals=allVals(vs).map(v=>ev(f,v));
+  if(vals.every(x=>x===1)) return 'Tautología';
+  if(vals.every(x=>x===0)) return 'Contradicción';
+  return 'Contingente';
+}
+function witness(f,vs,target=1){
+  return allVals(vs).find(v=>ev(f,v)===target) || null;
+}
+function setSat(fs,vs){
+  const w=allVals(vs).find(v=>fs.every(f=>ev(f,v)===1));
+  return w||null;
+}
+function consequence(fs,phi,vs){
+  const c=allVals(vs).find(v=>fs.every(f=>ev(f,v)===1) && ev(phi,v)===0);
+  return {valid:!c,counter:c||null};
+}
+
+// ---------- tablas / formas normales ----------
+function lit(v,bit,forDNF=true){
+  if(forDNF) return bit? v : `¬${v}`;
+  return bit? `¬${v}` : v;
+}
+function canonicalDNF(vs,bits){
+  const vals=allVals(vs), terms=[];
+  vals.forEach((v,i)=>{
+    if(bits[i]===1) terms.push(vs.map(x=>lit(x,v[x],true)).join(' ∧ '));
+  });
+  if(!terms.length) return '⊥';
+  if(terms.length===vals.length) return '⊤';
+  return terms.map(t=>`(${t})`).join(' ∨ ');
+}
+function canonicalCNF(vs,bits){
+  const vals=allVals(vs), clauses=[];
+  vals.forEach((v,i)=>{
+    if(bits[i]===0) clauses.push(vs.map(x=>lit(x,v[x],false)).join(' ∨ '));
+  });
+  if(!clauses.length) return '⊤';
+  if(clauses.length===vals.length) return '⊥';
+  return clauses.map(t=>`(${t})`).join(' ∧ ');
+}
+function truthTableHTML(vs,bits){
+  const vals=allVals(vs);
+  let h='<div class="tablewrap"><table><thead><tr>';
+  vs.forEach(v=>h+=`<th>${esc(v)}</th>`);
+  h+='<th>T</th></tr></thead><tbody>';
+  vals.forEach((v,i)=>{
+    h+='<tr>'+vs.map(x=>`<td>${v[x]}</td>`).join('')+`<td>${bits[i]}</td></tr>`;
+  });
+  return h+'</tbody></table></div>';
+}
+
+// ---------- constructores de preguntas ----------
+const qMC = (topic,prompt,options,answer,explain) => ({kind:'mc',topic,prompt,options:shuffle(options),answer,explain});
+const qProof = (topic,prompt,solution,note='') => ({kind:'proof',topic,prompt,solution,note});
+
+function syntaxAuto(){
+  const [p,q,r]=permVars(3);
+  const cases=[
+    {expr:`(${p} ∧ ${q})`,yes:true,why:'Se construye aplicando ∧ a dos variables de P.'},
+    {expr:`¬(${p} → ${r})`,yes:true,why:'Primero se construye la implicancia y luego se aplica negación.'},
+    {expr:`(${p} ∨ (¬${q}))`,yes:true,why:'Todas las variables pertenecen a P y la construcción usa reglas válidas.'},
+    {expr:`(${p} ∧ t)`,yes:false,why:'Aparece t, que no pertenece al conjunto P indicado.'},
+    {expr:`(${p} ${q})`,yes:false,why:'Falta un conectivo entre las dos fórmulas.'},
+    {expr:`(${p} ∧ )`,yes:false,why:'La conjunción no tiene segundo operando.'},
+    {expr:`¬∧${p}`,yes:false,why:'¬ debe aplicarse a una fórmula; aquí la expresión no sigue la gramática.'}
+  ];
+  const c=pick(cases);
+  const P=`{${p}, ${q}, ${r}}`;
+  return qMC('Sintaxis',
+    `Sea <span class="formula">P = ${esc(P)}</span>. ¿La expresión ${fspan(c.expr)} pertenece a <span class="formula">L(P)</span>?`,
+    ['Sí','No'], c.yes?'Sí':'No', c.why);
+}
+function syntaxProof(){
+  const [p,q,r]=permVars(3);
+  return qProof('Sintaxis',
+    `Explica, usando la definición inductiva de fórmula proposicional, por qué ${fspan(`((${p} ∧ (¬${q})) → (${r} ∨ ${p}))`)} pertenece a <span class="formula">L(P)</span> para <span class="formula">P={${p},${q},${r}}</span>.`,
+    `1) ${fspan(p)}, ${fspan(q)} y ${fspan(r)} están en P, por lo que son fórmulas. 2) De ${fspan(q)} se obtiene ${fspan(`¬${q}`)}. 3) Con ∧ se obtiene ${fspan(`(${p} ∧ ¬${q})`)}. 4) Con ∨ se obtiene ${fspan(`(${r} ∨ ${p})`)}. 5) Aplicando → a esas dos fórmulas se obtiene la expresión completa.`);
+}
+
+function semanticAuto(){
+  const n = document.getElementById('difficulty').value==='hard'?4:3;
+  const vs=permVars(n);
+  const depth=document.getElementById('difficulty').value==='basic'?2:3;
+  const f=randomFormula(vs,depth);
+  const val={};vs.forEach(v=>val[v]=randInt(0,1));
+  const ans=String(ev(f,val));
+  return qMC('Semántica',
+    `Bajo la valuación <span class="formula">${esc(valText(val,vs))}</span>, calcula ${fspan(`σ(${fmt(f)})`)}.`,
+    ['0','1'],ans,`Evaluando recursivamente los conectivos se obtiene ${fspan(`σ(${fmt(f)}) = ${ans}`)}.`);
+}
+function truthRowsAuto(){
+  const n=randInt(2,6);
+  const ans=String(2**n);
+  const opts=uniq([ans,String(n*n),String(2*n),String(2**(n-1)),String(2**n+2)]).slice(0,4);
+  while(opts.length<4) opts.push(String(randInt(3,80)));
+  return qMC('Tablas de verdad',
+    `Una fórmula usa exactamente <strong>${n}</strong> variables proposicionales. ¿Cuántas filas tiene su tabla de verdad?`,
+    opts,ans,`Hay una fila por valuación. Con ${n} variables existen ${fspan(`2^${n} = ${ans}`)} valuaciones.`);
+}
+function truthFunctionsAuto(){
+  const n=randInt(1,4), rows=2**n, ans=String(2**rows);
+  const distract=[String(2**n),String(rows*n),String(rows**2),String(2**(n+1))];
+  return qMC('Tablas de verdad',
+    `¿Cuántas tablas de verdad distintas (funciones booleanas) existen sobre <strong>${n}</strong> variable${n===1?'':'s'}?`,
+    uniq([ans,...distract]).slice(0,4),ans,
+    `La tabla tiene ${rows} filas y cada salida puede ser 0 o 1 independientemente: ${fspan(`2^(${rows}) = ${ans}`)}.`);
+}
+
+function equivalenceAuto(){
+  const [p,q,r]=permVars(3);
+  const eqCases=[
+    [I(V(p),V(q)),O(N(V(p)),V(q)),true,'Ley de implicancia.'],
+    [N(A(V(p),V(q))),O(N(V(p)),N(V(q))),true,'Ley de De Morgan.'],
+    [A(V(p),O(V(q),V(r))),O(A(V(p),V(q)),A(V(p),V(r))),true,'Distributividad de ∧ sobre ∨.'],
+    [B(V(p),V(q)),A(I(V(p),V(q)),I(V(q),V(p))),true,'Ley de doble implicancia.'],
+    [I(V(p),V(q)),I(V(q),V(p)),false,'La implicancia no es equivalente a su conversa.'],
+    [I(I(V(p),V(q)),V(r)),I(V(p),I(V(q),V(r))),false,'→ no es asociativo.']
+  ];
+  const [a,b,isEq,why]=pick(eqCases);
+  const c=findCounterEq(a,b,[p,q,r]);
+  return qMC('Equivalencia',
+    `¿Se cumple ${fspan(`${fmt(a)} ≡ ${fmt(b)}`)}?`,
+    ['Sí','No'],isEq?'Sí':'No',
+    isEq?why:`No. Un contraejemplo es ${fspan(valText(c,[p,q,r]))}: las fórmulas toman valores distintos.`);
+}
+function findCounterEq(a,b,vs){
+  return allVals(vs).find(v=>ev(a,v)!==ev(b,v)) || null;
+}
+function equivalenceProof(){
+  const [p,q,r]=permVars(3);
+  const cases=[
+    {
+      prompt:`Demuestra ${fspan(`¬(${p} ∨ ${q}) ≡ (¬${p} ∧ ¬${q})`)}.`,
+      sol:`Puedes hacerlo por tabla de verdad, o por la ley de De Morgan. Para toda valuación, ${fspan(`¬(${p}∨${q})`)} vale 1 exactamente cuando ambos ${p} y ${q} valen 0; eso coincide con ${fspan(`¬${p}∧¬${q}`)}.`
+    },
+    {
+      prompt:`Demuestra ${fspan(`${p} → ${q} ≡ ¬${p} ∨ ${q}`)}.`,
+      sol:`Compara las cuatro valuaciones de ${p},${q}. Ambas expresiones son falsas únicamente cuando ${fspan(`${p}=1, ${q}=0`)}, y verdaderas en los otros tres casos.`
+    },
+    {
+      prompt:`Decide si → es asociativo. Debes justificar si ${fspan(`(${p}→${q})→${r} ≡ ${p}→(${q}→${r})`)}.`,
+      sol:`No es asociativo. Busca una valuación que las distinga. Por ejemplo, con ${fspan(`${p}=0, ${q}=0, ${r}=0`)}, ${fspan(`(${p}→${q})→${r}`)} vale 0, mientras ${fspan(`${p}→(${q}→${r})`)} vale 1.`
+    },
+    {
+      prompt:`Demuestra la distributividad ${fspan(`${p} ∨ (${q} ∧ ${r}) ≡ (${p}∨${q}) ∧ (${p}∨${r})`)}.`,
+      sol:`Una demostración aceptada en este punto es construir la tabla de verdad de las dos fórmulas y verificar que coinciden en las 8 valuaciones. También puedes encadenar equivalencias conocidas si indicas cada ley usada.`
+    }
+  ];
+  const c=pick(cases); return qProof('Equivalencia',c.prompt,c.sol);
+}
+
+function normalFormAuto(){
+  const [p,q,r]=permVars(3);
+  const cases=[
+    [`(${p} ∨ ¬${q}) ∧ (${r} ∨ ${q})`,'CNF'],
+    [`(${p} ∧ ¬${q}) ∨ (${r} ∧ ${q})`,'DNF'],
+    [`${p} ∧ ${q}`,'Ambas'],
+    [`${p} ∨ ¬${q}`,'Ambas'],
+    [`${p} → ${q}`,'Ninguna'],
+    [`(${p} ∧ ${q}) ∨ (${r} ∧ (${p} ∨ ${q}))`,'Ninguna']
+  ];
+  const [expr,ans]=pick(cases);
+  return qMC('CNF / DNF',
+    `Clasifica la fórmula ${fspan(expr)} según las definiciones de forma normal.`,
+    ['CNF','DNF','Ambas','Ninguna'],ans,
+    ans==='CNF'?'Es una conjunción de cláusulas, y cada cláusula es una disyunción de literales.'
+    :ans==='DNF'?'Es una disyunción de términos, y cada término es una conjunción de literales.'
+    :ans==='Ambas'?'Una conjunción/disyunción de literales puede verse como un caso degenerado de ambas formas normales.'
+    :'La estructura usa un conectivo o anidamiento que no respeta directamente ninguna de las dos formas.');
+}
+function tableToNormalProof(){
+  const vs=permVars(Math.random()<.55?2:3);
+  const rows=2**vs.length;
+  let bits;
+  do{bits=Array.from({length:rows},()=>randInt(0,1));}
+  while(bits.every(x=>x===0)||bits.every(x=>x===1));
+  const askDNF=Math.random()<.5;
+  return qProof('CNF / DNF',
+    `A partir de la siguiente tabla, escribe una fórmula equivalente en <strong>${askDNF?'DNF':'CNF'}</strong>.${truthTableHTML(vs,bits)}`,
+    askDNF
+      ? `Una DNF canónica es:<br>${fspan(canonicalDNF(vs,bits))}`
+      : `Una CNF canónica es:<br>${fspan(canonicalCNF(vs,bits))}`,
+    'No es necesario que tu respuesta sea sintácticamente idéntica a la pauta si es lógicamente equivalente y está en la forma normal pedida.');
+}
+function convertNormalProof(){
+  const [p,q,r]=permVars(3);
+  const cases=[
+    {e:`${p} → (${q} → ${r})`,cnf:`¬${p} ∨ ¬${q} ∨ ${r}`,steps:'Aplica dos veces α→β ≡ ¬α∨β.'},
+    {e:`(${p} → ${q}) ∧ (${q} → ${r})`,cnf:`(¬${p} ∨ ${q}) ∧ (¬${q} ∨ ${r})`,steps:'Elimina cada implicancia; la fórmula resultante ya está en CNF.'},
+    {e:`¬(${p} → ${q})`,cnf:`${p} ∧ ¬${q}`,steps:`Usa ${p}→${q} ≡ ¬${p}∨${q}, luego De Morgan y doble negación.`},
+    {e:`${p} ↔ ${q}`,cnf:`(¬${p} ∨ ${q}) ∧ (¬${q} ∨ ${p})`,steps:'Reemplaza ↔ por las dos implicancias y luego elimina →.'}
+  ];
+  const c=pick(cases);
+  return qProof('CNF / DNF',
+    `Encuentra una fórmula en <strong>CNF</strong> equivalente a ${fspan(c.e)} y justifica las equivalencias usadas.`,
+    `${c.steps}<br>Resultado: ${fspan(c.cnf)}.`);
+}
+
+function functionalAuto(){
+  const cases=[
+    {
+      prompt:'¿Cuál de los siguientes conjuntos fue demostrado en clases que es funcionalmente completo?',
+      options:['{¬, →}','{∧, ∨, →, ↔}','{∧, ∨}','{→, ↔}'],ans:'{¬, →}',
+      exp:`Se mostró que ${fspan('α ∨ β ≡ (¬α) → β')}; como {¬,∨} es funcionalmente completo, también lo es {¬,→}.`
+    },
+    {
+      prompt:'Usando solo NAND, ¿qué fórmula representa ¬φ?',
+      options:['φ NAND φ','φ NAND ψ','(φ NAND φ) NAND φ','φ'],ans:'φ NAND φ',
+      exp:`Por definición, ${fspan('φ NAND φ = ¬(φ∧φ) ≡ ¬φ')}.`
+    },
+    {
+      prompt:'Usando solo NAND, ¿qué expresión representa φ ∧ ψ?',
+      options:['(φ NAND ψ) NAND (φ NAND ψ)','φ NAND ψ','(φ NAND φ) NAND (ψ NAND ψ)','φ NAND φ'],
+      ans:'(φ NAND ψ) NAND (φ NAND ψ)',
+      exp:`Primero ${fspan('φ NAND ψ = ¬(φ∧ψ)')}; aplicar NAND al resultado consigo mismo lo niega.`
+    },
+    {
+      prompt:'¿Por qué {∧,∨,→,↔} no es funcionalmente completo según la demostración de clases?',
+      options:[
+        'Con p=1, toda fórmula construida solo con esos conectivos vale 1, por lo que no puede expresar ¬p.',
+        'Porque no puede expresar p∧q.',
+        'Porque → no tiene tabla de verdad.',
+        'Porque ↔ siempre vale 0.'
+      ],
+      ans:'Con p=1, toda fórmula construida solo con esos conectivos vale 1, por lo que no puede expresar ¬p.',
+      exp:'La valuación p=1 es un invariante para fórmulas construidas solo con ∧,∨,→,↔ a partir de p.'
+    }
+  ];
+  const c=pick(cases);return qMC('Completitud funcional',c.prompt,c.options,c.ans,c.exp);
+}
+function functionalProof(){
+  const cases=[
+    {
+      p:'Demuestra que {NAND} es funcionalmente completo.',
+      s:`Basta expresar un conjunto ya conocido como funcionalmente completo, por ejemplo {¬,∧}. Se tiene ${fspan('¬φ ≡ φ NAND φ')} y ${fspan('φ∧ψ ≡ (φ NAND ψ) NAND (φ NAND ψ)')}. Por lo tanto, cualquier fórmula puede reescribirse usando solo NAND.`
+    },
+    {
+      p:'Demuestra que {¬,→} es funcionalmente completo.',
+      s:`Sabemos que {¬,∨} es funcionalmente completo. Expresa ∨ usando ¬ y →: ${fspan('α∨β ≡ (¬α)→β')}. Con eso puedes traducir cualquier fórmula construida con {¬,∨}.`
+    },
+    {
+      p:'Demuestra que {∧,∨,→,↔} no es funcionalmente completo.',
+      s:`Supón por contradicción que alguna fórmula φ(p), construida solo con esos conectivos, satisface ${fspan('φ≡¬p')}. Toma la valuación ${fspan('p=1')}. Por inducción estructural, toda subfórmula construida con ∧,∨,→,↔ vale 1 cuando todas sus hojas valen 1; entonces ${fspan('φ=1')}, pero ${fspan('¬p=0')}. Contradicción.`
+    }
+  ];
+  const c=pick(cases);return qProof('Completitud funcional',c.p,c.s);
+}
+
+function satAuto(){
+  const vs=permVars(3);
+  const [p,q,r]=vs;
+  let f;
+  const mode=randInt(0,4);
+  if(mode===0) f=A(V(p),N(V(p)));
+  else if(mode===1) f=A(A(V(p),I(V(p),V(q))),N(V(q)));
+  else if(mode===2) f=A(I(V(p),V(q)),O(V(p),V(r)));
+  else if(mode===3) f=O(A(V(p),N(V(r))),A(V(q),N(V(p))));
+  else f=randomFormula(vs,3);
+  const w=witness(f,vs,1), ans=w?'Sí':'No';
+  return qMC('Satisfacibilidad',
+    `¿Es satisfacible ${fspan(fmt(f))}?`,
+    ['Sí','No'],ans,
+    w?`Sí. Una valuación que la satisface es ${fspan(valText(w,vs))}.`
+      :`No. Ninguna valuación de ${vs.length} variables hace verdadera la fórmula.`);
+}
+function setSatAuto(){
+  const vs=permVars(3), [p,q,r]=vs;
+  const cases=[
+    [ [I(V(p),V(q)), I(V(q),V(r)), V(p)], true ],
+    [ [I(V(p),V(q)), I(V(q),V(r)), I(V(r),N(V(p))), V(p)], false ],
+    [ [O(N(V(p)),V(q)), O(V(p),V(r)), O(N(V(q)),N(V(r)))], true ],
+    [ [V(p),N(V(p))], false ],
+    [ [O(V(p),V(q)),N(V(p)),N(V(q))], false ]
+  ];
+  const [fs]=pick(cases);
+  const w=setSat(fs,vs),ans=w?'Satisfacible':'Inconsistente';
+  return qMC('Satisfacibilidad',
+    `Clasifica el conjunto <span class="formula">Σ = {${fs.map(fmt).join(', ')}}</span>.`,
+    ['Satisfacible','Inconsistente'],ans,
+    w?`Una valuación que satisface simultáneamente todas las fórmulas es ${fspan(valText(w,vs))}.`
+      :'No existe una valuación que haga verdaderas simultáneamente todas las fórmulas de Σ.');
+}
+function satProof(){
+  const [p,q,r]=permVars(3);
+  const cases=[
+    {
+      p:`Determina si <span class="formula">Σ={${p}→${q}, ${q}→${r}, ${r}→¬${p}, ${p}}</span> es satisfacible. Si no lo es, demuéstralo.`,
+      s:`Supón que una valuación satisface Σ. De ${fspan(p)} obtienes ${fspan(`${p}=1`)}. Como ${fspan(`${p}→${q}`)} debe valer 1, se fuerza ${fspan(`${q}=1`)}; luego ${fspan(`${r}=1`)}. Finalmente ${fspan(`${r}→¬${p}`)} fuerza ${fspan(`¬${p}=1`)}, contradiciendo ${fspan(`${p}=1`)}. Por tanto Σ es inconsistente.`
+    },
+    {
+      p:'Demuestra que una fórmula φ es contradicción si y solo si φ no es satisfacible.',
+      s:'(⇒) Si φ es contradicción, toda valuación le da 0, así que no existe una que la satisfaga. (⇐) Si φ no es satisfacible, no existe valuación con valor 1; como toda valuación da 0 o 1, todas deben dar 0, luego φ es contradicción.'
+    },
+    {
+      p:'Demuestra que una fórmula φ es tautología si y solo si ¬φ no es satisfacible.',
+      s:'(⇒) Si φ vale 1 en toda valuación, ¬φ vale 0 en toda valuación y no es satisfacible. (⇐) Si ¬φ no es satisfacible, vale 0 en toda valuación, por lo tanto φ vale 1 en toda valuación.'
+    }
+  ];
+  const c=pick(cases);return qProof('Satisfacibilidad',c.p,c.s);
+}
+
+function classifyAuto(){
+  const [p,q]=permVars(2);
+  const category=pick(['Tautología','Contradicción','Contingente']);
+  let f;
+  if(category==='Tautología'){
+    f=pick([O(V(p),N(V(p))),I(V(p),V(p)),I(A(V(p),I(V(p),V(q))),V(q))]);
+  }else if(category==='Contradicción'){
+    f=pick([A(V(p),N(V(p))),A(A(V(p),I(V(p),V(q))),N(V(q)))]);
+  }else{
+    do{f=randomFormula([p,q],3);}while(classification(f,[p,q])!=='Contingente');
+  }
+  return qMC('Tautologías / contradicciones',
+    `Clasifica ${fspan(fmt(f))}.`,
+    ['Tautología','Contradicción','Contingente'],category,
+    category==='Tautología'?'Vale 1 bajo toda valuación.'
+      :category==='Contradicción'?'Vale 0 bajo toda valuación.'
+      :`Es verdadera para algunas valuaciones y falsa para otras. Por ejemplo, una valuación verdadera es ${fspan(valText(witness(f,[p,q],1),[p,q]))} y una falsa es ${fspan(valText(witness(f,[p,q],0),[p,q]))}.`);
+}
+function tautEqAuto(){
+  return qMC('Tautologías / contradicciones',
+    '¿Cuál enunciado caracteriza correctamente la equivalencia lógica entre φ y ψ?',
+    [
+      'φ ≡ ψ si y solo si φ ↔ ψ es tautología.',
+      'φ ≡ ψ si y solo si φ ∧ ψ es contradicción.',
+      'φ ≡ ψ si y solo si φ → ψ es contradicción.',
+      'φ ≡ ψ si y solo si φ ∨ ψ no es satisfacible.'
+    ],
+    'φ ≡ ψ si y solo si φ ↔ ψ es tautología.',
+    'El bicondicional vale 1 exactamente cuando ambas fórmulas tienen el mismo valor; que sea tautología exige esa igualdad en toda valuación.');
+}
+function tautProof(){
+  return qProof('Tautologías / contradicciones',
+    'Demuestra que dos fórmulas φ y ψ son equivalentes si y solo si φ ↔ ψ es una tautología.',
+    '(⇒) Si φ≡ψ, bajo toda valuación tienen el mismo valor, así que φ↔ψ vale 1 siempre. (⇐) Si φ↔ψ es tautología, vale 1 bajo toda valuación; por la semántica de ↔, φ y ψ tienen el mismo valor bajo toda valuación, luego φ≡ψ.');
+}
+
+function consequenceAuto(){
+  const [p,q,r,s]=permVars(4);
+  const cases=[
+    {fs:[I(V(p),V(q)),V(p)],phi:V(q)},
+    {fs:[I(V(p),V(q)),N(V(q))],phi:N(V(p))},
+    {fs:[O(O(V(p),V(q)),V(r)),I(V(p),V(s)),I(V(q),V(s)),I(V(r),V(s))],phi:V(s)},
+    {fs:[V(p)],phi:A(V(p),V(q))},
+    {fs:[I(V(p),V(q)),O(V(p),V(r))],phi:V(q)},
+    {fs:[O(V(p),V(q))],phi:A(V(p),V(q))},
+    {fs:[A(V(p),V(q))],phi:O(V(p),V(q))}
+  ];
+  const c=pick(cases), vs=uniq([...pVars(c.fs),...pVars([c.phi])]);
+  const res=consequence(c.fs,c.phi,vs);
+  return qMC('Consecuencia lógica',
+    `¿Se cumple <span class="formula">{${c.fs.map(fmt).join(', ')}} ⊨ ${fmt(c.phi)}</span>?`,
+    ['Sí','No'],res.valid?'Sí':'No',
+    res.valid?'Sí. No existe una valuación que haga verdaderas todas las premisas y falsa la conclusión.'
+      :`No. Un contramodelo es ${fspan(valText(res.counter,vs))}.`);
+}
+function pVars(fs){
+  const out=[];
+  const rec=x=>{
+    if(x.t==='v')out.push(x.n);
+    else if(x.t==='n')rec(x.a);
+    else {rec(x.a);rec(x.b);}
+  };
+  fs.forEach(rec);return uniq(out);
+}
+function consequenceTheoremAuto(){
+  const cases=[
+    {
+      q:'Si Σ es inconsistente y φ es una fórmula arbitraria, ¿qué ocurre?',
+      a:'Σ ⊨ φ para toda φ.',
+      o:['Σ ⊨ φ para toda φ.','Σ no tiene consecuencias lógicas.','φ debe ser tautología.','Σ se vuelve satisfacible al agregar φ.'],
+      e:'La definición cuantifica sobre valuaciones que satisfacen Σ. Si no existe ninguna, la condición se cumple vacíamente.'
+    },
+    {
+      q:'¿Qué condición es equivalente a Σ ⊨ φ?',
+      a:'Σ ∪ {¬φ} es inconsistente.',
+      o:['Σ ∪ {¬φ} es inconsistente.','Σ ∪ {φ} es inconsistente.','Σ es tautología.','¬φ es satisfacible.'],
+      e:'Es el teorema que conecta consecuencia lógica con satisfacibilidad.'
+    },
+    {
+      q:'Para Σ={φ₁,…,φₙ} finito, ¿qué condición es equivalente a Σ ⊨ ψ?',
+      a:'(φ₁ ∧ ··· ∧ φₙ) → ψ es tautología.',
+      o:['(φ₁ ∧ ··· ∧ φₙ) → ψ es tautología.','φ₁ ∨ ··· ∨ φₙ es contradicción.','ψ → (φ₁ ∧ ··· ∧ φₙ) es tautología.','Σ es siempre inconsistente.'],
+      e:'Cuando todas las premisas son verdaderas, la conclusión debe ser verdadera; eso es precisamente que la implicancia sea tautológica.'
+    }
+  ];
+  const c=pick(cases);return qMC('Consecuencia lógica',c.q,c.o,c.a,c.e);
+}
+function consequenceProof(){
+  const cases=[
+    {
+      p:'Demuestra: Σ ⊨ φ si y solo si Σ ∪ {¬φ} es inconsistente.',
+      s:'(⇒) Si Σ⊨φ, ninguna valuación puede satisfacer Σ y a la vez ¬φ; por lo tanto Σ∪{¬φ} es inconsistente. (⇐) Si Σ∪{¬φ} es inconsistente y una valuación satisface Σ, no puede satisfacer ¬φ; entonces debe satisfacer φ. Luego Σ⊨φ.'
+    },
+    {
+      p:'Sea α una contradicción. Demuestra que Σ es inconsistente si y solo si Σ ⊨ α.',
+      s:'(⇒) Si Σ es inconsistente, no hay valuaciones que satisfagan las premisas, por lo que Σ⊨α se cumple vacíamente. (⇐) Si Σ fuera satisfacible, alguna valuación satisfaría Σ; como Σ⊨α, esa valuación debería satisfacer α, imposible porque α es contradicción.'
+    },
+    {
+      p:'Demuestra: si Σ ⊨ φ→ψ, entonces Σ∪{φ} ⊨ ψ.',
+      s:'Toma una valuación arbitraria que satisfaga Σ∪{φ}. Entonces satisface Σ y φ. Por la hipótesis, satisface φ→ψ. Como φ vale 1 y la implicancia vale 1, ψ debe valer 1. Por arbitrariedad, Σ∪{φ}⊨ψ.'
+    },
+    {
+      p:'Si φ es tautología, demuestra que de Σ∪{φ} ⊨ ψ se sigue Σ ⊨ ψ.',
+      s:'Toma una valuación que satisfaga Σ. Como φ es tautología, también satisface φ; por tanto satisface Σ∪{φ}. La hipótesis obliga a que satisfaga ψ. Luego Σ⊨ψ.'
+    }
+  ];
+  const c=pick(cases);return qProof('Consecuencia lógica',c.p,c.s);
+}
+
+function modelingAuto(){
+  const i=randInt(1,5), j=i+randInt(1,3);
+  const cases=[
+    {
+      p:`Para una persona i y tres salas, ¿qué fórmula expresa “i está en al menos una sala”?`,
+      o:[`xᵢ,₁ ∨ xᵢ,₂ ∨ xᵢ,₃`,`xᵢ,₁ ∧ xᵢ,₂ ∧ xᵢ,₃`,`¬xᵢ,₁ ∨ ¬xᵢ,₂ ∨ ¬xᵢ,₃`,`xᵢ,₁ → xᵢ,₂`],
+      a:`xᵢ,₁ ∨ xᵢ,₂ ∨ xᵢ,₃`,
+      e:'La disyunción exige que al menos una de las variables de sala sea verdadera.'
+    },
+    {
+      p:`Para una persona i y tres salas, ¿qué fórmula expresa “i no puede estar en más de una sala”?`,
+      o:[
+        `¬(xᵢ,₁∧xᵢ,₂) ∧ ¬(xᵢ,₁∧xᵢ,₃) ∧ ¬(xᵢ,₂∧xᵢ,₃)`,
+        `xᵢ,₁ ∨ xᵢ,₂ ∨ xᵢ,₃`,
+        `xᵢ,₁ ∧ xᵢ,₂ ∧ xᵢ,₃`,
+        `¬xᵢ,₁ ∧ ¬xᵢ,₂ ∧ ¬xᵢ,₃`
+      ],
+      a:`¬(xᵢ,₁∧xᵢ,₂) ∧ ¬(xᵢ,₁∧xᵢ,₃) ∧ ¬(xᵢ,₂∧xᵢ,₃)`,
+      e:'Se prohíbe cada par de salas simultáneas.'
+    },
+    {
+      p:`En un modelamiento de k-coloreo, si hay un arco entre los nodos ${i} y ${j}, ¿qué debe impedirse para cada color c?`,
+      o:[`x${i},c ∧ x${j},c`,`x${i},c ∨ x${j},c`,`¬x${i},c ∧ ¬x${j},c`,`x${i},c ↔ x${j},c`],
+      a:`x${i},c ∧ x${j},c`,
+      e:'Nodos adyacentes deben recibir colores distintos, así que no pueden compartir el mismo color c.'
+    },
+    {
+      p:'¿Qué significa que la fórmula final del modelamiento de k-coloreo sea satisfacible?',
+      o:['Existe una asignación de colores que satisface todas las restricciones.','Todos los grafos son k-coloreables.','El grafo no tiene arcos.','La fórmula es necesariamente tautología.'],
+      a:'Existe una asignación de colores que satisface todas las restricciones.',
+      e:'Las valuaciones satisfactorias codifican soluciones del problema modelado.'
+    },
+    {
+      p:'¿Cuál es la condición que define un grafo no dirigido?',
+      o:['Si (u,v)∈E, entonces (v,u)∈E.','Cada nodo tiene exactamente un arco.','E=V×V.','No existen ciclos.'],
+      a:'Si (u,v)∈E, entonces (v,u)∈E.',
+      e:'Esa simetría de los arcos es la definición usada en la clase.'
+    }
+  ];
+  const c=pick(cases);return qMC('Modelamiento SAT / grafos',c.p,c.o,c.a,c.e);
+}
+function cartesianAuto(){
+  const a=randInt(2,5),b=randInt(2,6),ans=String(a*b);
+  return qMC('Modelamiento SAT / grafos',
+    `Si |A|=${a} y |B|=${b}, ¿cuántos pares ordenados tiene A×B?`,
+    uniq([ans,String(a+b),String(a*b+1),String(a+b+2)]),ans,
+    `Cada elemento de A se combina con cada elemento de B: ${a}·${b}=${ans}.`);
+}
+function modelingProof(){
+  const cases=[
+    {
+      p:'Modela la restricción “cada persona debe quedar en exactamente una de 3 salas” usando variables xᵢ,₁, xᵢ,₂, xᵢ,₃.',
+      s:`Para cada persona i, combina “al menos una” y “a lo más una”:<br>${fspan('(xᵢ,₁ ∨ xᵢ,₂ ∨ xᵢ,₃) ∧ ¬(xᵢ,₁∧xᵢ,₂) ∧ ¬(xᵢ,₁∧xᵢ,₃) ∧ ¬(xᵢ,₂∧xᵢ,₃)')}.`
+    },
+    {
+      p:'En el problema de asignación de salas, escribe la restricción proposicional para que dos personas i,j de una pareja prohibida no compartan ninguna de las 3 salas.',
+      s:`Si pᵢ,ⱼ indica que la pareja es prohibida, una forma es:<br>${fspan('(pᵢ,ⱼ → ¬(xᵢ,₁∧xⱼ,₁)) ∧ (pᵢ,ⱼ → ¬(xᵢ,₂∧xⱼ,₂)) ∧ (pᵢ,ⱼ → ¬(xᵢ,₃∧xⱼ,₃))')}.`
+    },
+    {
+      p:'Explica por qué, en un modelamiento correcto, “el problema original tiene solución” debe ser equivalente a “la fórmula construida es satisfacible”.',
+      s:'Cada valuación satisfactoria debe codificar una solución que respeta todas las restricciones, y cada solución válida debe inducir una valuación que hace verdaderas todas las fórmulas. Es necesario justificar ambas direcciones.'
+    }
+  ];
+  const c=pick(cases);return qProof('Modelamiento SAT / grafos',c.p,c.s);
+}
+
+// ---------- registro ----------
+const registry=[
+  {key:'syntax',label:'Sintaxis',auto:[syntaxAuto],proof:[syntaxProof]},
+  {key:'semantics',label:'Semántica',auto:[semanticAuto],proof:[]},
+  {key:'truth',label:'Tablas de verdad',auto:[truthRowsAuto,truthFunctionsAuto],proof:[]},
+  {key:'equiv',label:'Equivalencia',auto:[equivalenceAuto],proof:[equivalenceProof]},
+  {key:'normal',label:'CNF / DNF',auto:[normalFormAuto],proof:[tableToNormalProof,convertNormalProof]},
+  {key:'functional',label:'Completitud funcional',auto:[functionalAuto],proof:[functionalProof]},
+  {key:'sat',label:'Satisfacibilidad',auto:[satAuto,setSatAuto],proof:[satProof]},
+  {key:'taut',label:'Tautologías / contradicciones',auto:[classifyAuto,tautEqAuto],proof:[tautProof]},
+  {key:'consequence',label:'Consecuencia lógica',auto:[consequenceAuto,consequenceTheoremAuto],proof:[consequenceProof]},
+  {key:'model',label:'Modelamiento SAT / grafos',auto:[modelingAuto,cartesianAuto],proof:[modelingProof]}
+];
+
+let current=[]; let allSolutionsShown=false;
+
+function buildTopicChips(){
+  const box=document.getElementById('topics');
+  registry.forEach(r=>{
+    const lab=document.createElement('label');lab.className='chip';
+    lab.innerHTML=`<input type="checkbox" data-topic="${r.key}" checked> ${esc(r.label)}`;
+    box.appendChild(lab);
+  });
+}
+function enabledRegistry(){
+  const keys=[...document.querySelectorAll('[data-topic]:checked')].map(x=>x.dataset.topic);
+  return registry.filter(r=>keys.includes(r.key));
+}
+
+function chooseGenerator(mode, regs){
+  let pools=[];
+  regs.forEach(r=>{
+    if(mode==='auto' || mode==='mixed') r.auto.forEach(fn=>pools.push({r,fn,kind:'auto'}));
+    if(mode==='proof' || mode==='mixed') r.proof.forEach(fn=>pools.push({r,fn,kind:'proof'}));
+  });
+  if(mode==='mixed'){
+    const wantProof=Math.random()<0.28;
+    const filtered=pools.filter(x=>wantProof?x.kind==='proof':x.kind==='auto');
+    if(filtered.length) pools=filtered;
+  }
+  return pick(pools);
+}
+
+function generateSet(){
+  const regs=enabledRegistry();
+  if(!regs.length){alert('Selecciona al menos un tema.');return;}
+  const mode=document.getElementById('mode').value;
+  let n=Number(document.getElementById('count').value);
+  current=[];const used=new Set();
+  let attempts=0;
+  while(current.length<n && attempts<n*15){
+    attempts++;
+    const g=chooseGenerator(mode,regs);
+    if(!g) break;
+    const q=g.fn();
+    const sig=q.topic+'|'+q.prompt.replace(/<[^>]*>/g,'');
+    if(used.has(sig)) continue;
+    used.add(sig);current.push(q);
+  }
+  if(!current.length){alert('No hay generadores disponibles para esa combinación.');return;}
+  document.getElementById('seed').textContent=new Date().toLocaleTimeString('es-CL',{hour12:false})+' · '+Math.floor(Math.random()*10000).toString().padStart(4,'0');
+  render();
+  allSolutionsShown=false;
+}
+
+function render(){
+  const root=document.getElementById('questions');root.innerHTML='';
+  let autos=0,proofs=0;
+  current.forEach((q,idx)=>{
+    if(q.kind==='mc')autos++;else proofs++;
+    const card=document.createElement('section');card.className='q';card.dataset.idx=idx;
+    const head=document.createElement('div');head.className='qhead';
+    head.innerHTML=`<div class="num">Ejercicio ${idx+1}</div><div class="tag">${esc(q.topic)}</div>`;
+    card.appendChild(head);
+    const prompt=document.createElement('div');prompt.className='prompt';prompt.innerHTML=q.prompt;card.appendChild(prompt);
+
+    if(q.kind==='mc'){
+      const opts=document.createElement('div');opts.className='options';
+      q.options.forEach((op,j)=>{
+        const lab=document.createElement('label');lab.className='opt';
+        const inp=document.createElement('input');inp.type='radio';inp.name='q'+idx;inp.value=op;
+        const sp=document.createElement('span');sp.textContent=op;
+        lab.append(inp,sp);opts.appendChild(lab);
+      });
+      card.appendChild(opts);
+      const fb=document.createElement('div');fb.className='feedback';card.appendChild(fb);
+      const qa=document.createElement('div');qa.className='qactions';
+      const btn=document.createElement('button');btn.className='secondary';btn.textContent='Corregir';btn.onclick=()=>checkOne(idx);
+      const sol=document.createElement('button');sol.className='showSol';sol.textContent='Ver explicación';sol.onclick=()=>toggleSolution(idx);
+      qa.append(btn,sol);card.appendChild(qa);
+      const sd=document.createElement('div');sd.className='solution';sd.innerHTML=q.explain;card.appendChild(sd);
+    }else{
+      const ta=document.createElement('textarea');ta.placeholder='Escribe aquí tu demostración, contraejemplo, fórmula o desarrollo antes de mirar la pauta…';card.appendChild(ta);
+      if(q.note){const nt=document.createElement('div');nt.className='note';nt.innerHTML=q.note;card.appendChild(nt);}
+      const qa=document.createElement('div');qa.className='qactions';
+      const sol=document.createElement('button');sol.className='showSol';sol.textContent='Ver pauta';sol.onclick=()=>toggleSolution(idx);
+      qa.appendChild(sol);card.appendChild(qa);
+      const sd=document.createElement('div');sd.className='solution';sd.innerHTML='<strong>Pauta / idea de solución:</strong><br>'+q.solution;card.appendChild(sd);
+    }
+    root.appendChild(card);
+  });
+  document.getElementById('summary').innerHTML=`<strong>${current.length}</strong> ejercicios: ${autos} autocorregibles y ${proofs} de desarrollo.`;
+  document.getElementById('score').innerHTML='<strong>Puntaje:</strong> —';
+}
+
+function checkOne(idx){
+  const q=current[idx]; if(!q || q.kind!=='mc')return false;
+  const card=document.querySelector(`.q[data-idx="${idx}"]`);
+  const sel=card.querySelector(`input[name="q${idx}"]:checked`);
+  const fb=card.querySelector('.feedback');
+  card.classList.remove('correct','incorrect');fb.className='feedback show';
+  if(!sel){
+    fb.classList.add('bad');fb.textContent='Sin responder.';
+    card.classList.add('incorrect');return false;
+  }
+  const ok=sel.value===q.answer;
+  card.classList.add(ok?'correct':'incorrect');fb.classList.add(ok?'ok':'bad');
+  fb.innerHTML=ok?'Correcto.':`Incorrecto. Respuesta correcta: <strong>${esc(q.answer)}</strong>.`;
+  return ok;
+}
+function checkAll(){
+  let total=0,ok=0,answered=0;
+  current.forEach((q,i)=>{
+    if(q.kind==='mc'){
+      total++;
+      const card=document.querySelector(`.q[data-idx="${i}"]`);
+      if(card.querySelector(`input[name="q${i}"]:checked`))answered++;
+      if(checkOne(i))ok++;
+    }
+  });
+  document.getElementById('score').innerHTML=`<strong>Puntaje:</strong> ${ok}/${total} · respondidas ${answered}/${total}`;
+}
+function toggleSolution(idx){
+  const card=document.querySelector(`.q[data-idx="${idx}"]`);
+  card.querySelector('.solution')?.classList.toggle('show');
+}
+function toggleAll(){
+  allSolutionsShown=!allSolutionsShown;
+  document.querySelectorAll('.solution').forEach(x=>x.classList.toggle('show',allSolutionsShown));
+}
+
+document.getElementById('generate').addEventListener('click',generateSet);
+document.getElementById('checkAll').addEventListener('click',checkAll);
+document.getElementById('showAll').addEventListener('click',toggleAll);
+buildTopicChips();
+generateSet();
+</script>
+</body>
+</html>
